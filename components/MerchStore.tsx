@@ -65,7 +65,7 @@ export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
       <Header />
 
       <main className="max-w-[1955px] mx-auto px-8 py-12">
-        <ArtistSection collections={collections} />
+        <ArtistSection />
 
         <ProductFilters
           sortBy={sortBy}
@@ -74,7 +74,7 @@ export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
           onHideSoldOutChange={setHideSoldOut}
         />
 
-        <ProductGrid products={paginatedProducts} domain={domain} />
+        <ProductGrid products={paginatedProducts} domain={domain} publicToken={publicToken} />
 
         <Pagination
           currentPage={currentPage}
@@ -87,6 +87,7 @@ export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
       </main>
 
       <Footer />
+      <CartDrawer domain={domain} />
     </div>
   );
 }

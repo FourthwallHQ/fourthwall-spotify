@@ -80,7 +80,7 @@ export async function changeCartItemQuantity(
   currency: string = 'USD'
 ): Promise<Cart> {
   const response = await fetch(
-    `${STOREFRONT_API_URL}/carts/${cartId}/change-quantity?storefront_token=${storefrontToken}&currency=${currency}`,
+    `${STOREFRONT_API_URL}/carts/${cartId}/change?storefront_token=${storefrontToken}&currency=${currency}`,
     {
       method: 'POST',
       headers: {

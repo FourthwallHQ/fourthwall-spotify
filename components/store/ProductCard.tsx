@@ -2,21 +2,20 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Product } from '@/types/store';
 import { getLowestPrice, formatPrice } from '@/lib/store-utils';
 import { useCart } from '@/contexts/CartContext';
 
 interface ProductCardProps {
   product: Product;
-  domain: string;
 }
 
-export default function ProductCard({ product, domain }: ProductCardProps) {
-  const { addItem } = useCart();
+export default function ProductCard({ product }: ProductCardProps) {
+  const { addItem, domain, publicToken } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const price = getLowestPrice(product);
   const mainImage = product.images[0];
-  const productUrl = `https://${domain}/products/${product.slug}`;
   
   // Check if product has available stock
   const hasStock = product.variants.some(variant => {
@@ -52,10 +51,8 @@ export default function ProductCard({ product, domain }: ProductCardProps) {
 
   return (
     <div className="group cursor-pointer block">
-      <a 
-        href={productUrl}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link 
+        href={`/product/${product.slug}?public_token=${publicToken}&domain=${domain}`}
       >
         <div className="aspect-square bg-[#282828] rounded-lg overflow-hidden mb-4 relative">
           {mainImage ? (
@@ -72,19 +69,17 @@ export default function ProductCard({ product, domain }: ProductCardProps) {
           )}
           
           {/* Add to Cart Button - Shows on hover */}
-          {hasStock && (
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-              <button
-                onClick={handleAddToCart}
-                disabled={isAdding}
-                className="w-full py-2 bg-white text-black font-medium rounded hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAdding ? 'Adding...' : 'Add to cart'}
-              </button>
-            </div>
-          )}
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+            <button
+              onClick={handleAddToCart}
+              disabled={isAdding || !hasStock}
+              className="w-full py-2 bg-white text-black font-medium rounded hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+            >
+              {isAdding ? 'Adding...' : !hasStock ? 'Out of stock' : 'Add to cart'}
+            </button>
+          </div>
         </div>
-      </a>
+      </Link>
       
       <h3 className="text-sm font-medium mb-2 line-clamp-2">
         {product.name}

@@ -47,7 +47,7 @@ export async function fourthwallOAuth(props: {
   }
 
   const shopId = await shopIdResponse.json();
-  const { id: shop_id, domain } = shopId;
+  const { id: shop_id, domain, name } = shopId;
 
   const publicTokenResponse = await fetch(`${apiUrl}/open-api/v1.0/public-token`, {
     method: 'PUT',
@@ -66,6 +66,7 @@ export async function fourthwallOAuth(props: {
     shop_id,
     domain,
     public_token: token,
+    name,
     expires_in,
     success: true,
   }), {

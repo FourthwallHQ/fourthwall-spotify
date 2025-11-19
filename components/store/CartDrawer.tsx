@@ -47,7 +47,7 @@ export default function CartDrawer({ domain }: CartDrawerProps) {
     if (cart && cart.items.length > 0) {
       // Redirect to Fourthwall checkout
       // Note: You'll need to get the proper checkout URL from Fourthwall
-      window.open(`https://${domain}/checkout/${cart.id}`, '_blank');
+      window.open(`https://${domain}/checkout?cartId=${cart.id}`, '_blank');
     }
   };
 

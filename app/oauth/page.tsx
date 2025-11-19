@@ -7,7 +7,7 @@ export default function OAuthFourthwallWrapped() {
   return <Suspense fallback={<div>Loading...</div>}>
     <OAuthRedirect 
       authEndpoint={`/api/oauth`} 
-      appRedirect={({ public_token, domain }) => `/?public_token=${public_token}&domain=${domain}`}
+      appRedirect={({ public_token, domain, name }) => `/?public_token=${public_token}&domain=${domain}&name=${name}`}
       message="Connecting your Fourthwall account..."
       redirectMessage="Taking you to connect your Twitch account..."
     />
