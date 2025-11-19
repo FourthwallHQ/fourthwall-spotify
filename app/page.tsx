@@ -8,14 +8,15 @@ import ConnectPage from '@/components/ConnectPage';
 function HomeContent() {
   const searchParams = useSearchParams();
   const publicToken = searchParams.get('public_token');
+  const domain = searchParams.get('domain');
 
   // If no token is provided, show the connect page
-  if (!publicToken) {
+  if (!publicToken || !domain) {
     return <ConnectPage />;
   }
 
   // Otherwise, show the merch store
-  return <MerchStore publicToken={publicToken} />;
+  return <MerchStore publicToken={publicToken} domain={domain} />;
 }
 
 export default function Home() {
