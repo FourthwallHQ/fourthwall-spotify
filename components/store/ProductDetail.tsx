@@ -11,11 +11,9 @@ import Footer from './Footer';
 
 interface ProductDetailProps {
   slug: string;
-  publicToken: string;
-  domain: string;
 }
 
-export default function ProductDetail({ slug, publicToken, domain }: ProductDetailProps) {
+export default function ProductDetail({ slug, }: ProductDetailProps) {
   const [product, setProduct] = useState<Product | null>(null);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +21,7 @@ export default function ProductDetail({ slug, publicToken, domain }: ProductDeta
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const { addItem } = useCart();
+  const { addItem, name, publicToken, domain } = useCart();
 
   useEffect(() => {
     async function fetchData() {
@@ -98,7 +96,7 @@ export default function ProductDetail({ slug, publicToken, domain }: ProductDeta
         <div className="max-w-7xl mx-auto px-8 py-12">
           <p className="text-lg">Product not found</p>
           <Link
-            href={`/?public_token=${publicToken}&domain=${domain}`}
+            href={`/?public_token=${publicToken}&domain=${domain}&name=${name}`}
             className="text-[#1ed760] hover:underline mt-4 inline-block"
           >
             ← Back to store
@@ -120,7 +118,7 @@ export default function ProductDetail({ slug, publicToken, domain }: ProductDeta
       <main className="max-w-[1955px] mx-auto px-8 py-8">
         {/* Back Button */}
         <Link
-          href={`/?public_token=${publicToken}&domain=${domain}`}
+          href={`/?public_token=${publicToken}&domain=${domain}&name=${name}`}
           className="inline-flex items-center text-white hover:text-gray-300 transition mb-8"
         >
           <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

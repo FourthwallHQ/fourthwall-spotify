@@ -12,7 +12,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { addItem, domain, publicToken } = useCart();
+  const { addItem, domain, publicToken, name } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const price = getLowestPrice(product);
   const mainImage = product.images[0];
@@ -52,7 +52,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group cursor-pointer block">
       <Link 
-        href={`/product/${product.slug}?public_token=${publicToken}&domain=${domain}`}
+        href={`/product/${product.slug}?public_token=${publicToken}&domain=${domain}&name=${name}`}
       >
         <div className="aspect-square bg-[#282828] rounded-lg overflow-hidden mb-4 relative">
           {mainImage ? (

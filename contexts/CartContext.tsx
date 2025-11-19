@@ -22,7 +22,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'fourthwall_cart_id';
+const getCartStorageKey = (publicToken: string) => `fourthwall_cart_id_${publicToken}`;
 
 export function CartProvider({
   children,
@@ -42,7 +42,7 @@ export function CartProvider({
   // Load cart from API on mount using stored cart ID
   useEffect(() => {
     const loadCart = async () => {
-      const savedCartId = localStorage.getItem(CART_STORAGE_KEY);
+      const savedCartId = localStorage.getItem(getCartStorageKey(publicToken));
       if (savedCartId) {
         try {
           // Fetch the cart from the API to get current state
@@ -51,7 +51,7 @@ export function CartProvider({
         } catch (error) {
           console.error('Failed to load cart:', error);
           // Clear invalid cart ID
-          localStorage.removeItem(CART_STORAGE_KEY);
+          localStorage.removeItem(getCartStorageKey(publicToken));
         }
       }
       setIsLoading(false);
@@ -71,7 +71,7 @@ export function CartProvider({
         // Create new cart via API
         updatedCart = await createCart(publicToken, [{ variantId, quantity }]);
         // Store cart ID in localStorage for persistence
-        localStorage.setItem(CART_STORAGE_KEY, updatedCart.id);
+        localStorage.setItem(getCartStorageKey(publicToken), updatedCart.id);
       } else {
         // Add to existing cart via API
         updatedCart = await addToCart(publicToken, cart.id, [{ variantId, quantity }]);
@@ -98,7 +98,7 @@ export function CartProvider({
       
       // Clear cart from localStorage if empty
       if (updatedCart.items.length === 0) {
-        localStorage.removeItem(CART_STORAGE_KEY);
+        localStorage.removeItem(getCartStorageKey(publicToken));
         setCart(null);
       }
     } catch (error) {

@@ -21,7 +21,7 @@ function ProductPageContent({ slug }: { slug: string }) {
   }
 
   return <CartProvider publicToken={publicToken} domain={domain} name={name} >
-    <ProductDetail slug={slug} publicToken={publicToken} domain={domain} />
+    <ProductDetail slug={slug} />
   </CartProvider>;
 }
 
