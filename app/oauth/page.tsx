@@ -9,7 +9,7 @@ export default function OAuthFourthwallWrapped() {
       authEndpoint={`/api/oauth`} 
       appRedirect={({ public_token, domain, name }) => `/?public_token=${public_token}&domain=${domain}&name=${name}`}
       message="Connecting your Fourthwall account..."
-      redirectMessage="Taking you to connect your Twitch account..."
+      redirectMessage="Taking you to your merch store..."
     />
   </Suspense>
 }
