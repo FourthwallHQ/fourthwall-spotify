@@ -47,7 +47,19 @@ export async function fourthwallOAuth(props: {
   }
 
   const shopId = await shopIdResponse.json();
-  const { id: shop_id, domain, name } = shopId;
+  const { id: shop_id, name } = shopId;
+
+  const shopDetailsResponse = await fetch(`${apiUrl}/open-api/v1.0/shops/current/contact-info`, {
+    headers: {
+      'Authorization': `Bearer ${access_token}`,
+    },
+  });
+
+  if (!shopDetailsResponse.ok) {
+    throw new Error(`Failed to get shop details: ${await shopDetailsResponse.text()}`)
+  }
+
+  const { domain } = await shopDetailsResponse.json();  
 
   const publicTokenResponse = await fetch(`${apiUrl}/open-api/v1.0/public-token`, {
     method: 'PUT',
