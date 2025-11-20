@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/store-utils';
 import { useCart } from '@/contexts/CartContext';
 import Header from './Header';
 import Footer from './Footer';
+import CartDrawer from './CartDrawer';
 
 interface ProductDetailProps {
   slug: string;
@@ -294,6 +295,7 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
       </main>
 
       <Footer />
+      <CartDrawer domain={domain} />
     </div>
   );
 }
