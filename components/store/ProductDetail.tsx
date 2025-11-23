@@ -19,6 +19,8 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<Product['variants'][0] | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -45,6 +47,11 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
         if (foundProduct) {
           setProduct(foundProduct);
           setSelectedVariant(foundProduct.variants[0]);
+          // Initialize color and size from first variant
+          if (foundProduct.variants[0]) {
+            setSelectedColor(foundProduct.variants[0].attributes.color?.name || null);
+            setSelectedSize(foundProduct.variants[0].attributes.size?.name || null);
+          }
         }
         
         setLoading(false);
@@ -56,6 +63,30 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
 
     fetchData();
   }, [publicToken, slug]);
+
+  // Update selected variant when color or size changes
+  useEffect(() => {
+    if (!product || !selectedColor || !selectedSize) return;
+    
+    const matchingVariant = product.variants.find(v => 
+      v.attributes.color?.name === selectedColor && 
+      v.attributes.size?.name === selectedSize
+    );
+    
+    if (matchingVariant) {
+      setSelectedVariant(matchingVariant);
+    }
+  }, [selectedColor, selectedSize, product]);
+
+  // Reset image index when variant changes
+  useEffect(() => {
+    setSelectedImageIndex(0);
+  }, [selectedVariant]);
+
+  // Get images to display: variant images if available, otherwise product images
+  const displayImages = selectedVariant?.images && selectedVariant.images.length > 0 
+    ? selectedVariant.images 
+    : product?.images || [];
 
   const handleBuyNow = () => {
     const productUrl = `https://${domain}/products/${slug}`;
@@ -133,18 +164,18 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
           {/* Product Images */}
           <div className="space-y-4">
             <div className="aspect-square bg-[#282828] rounded-lg overflow-hidden relative">
-              {product.images[selectedImageIndex] && (
+              {displayImages[selectedImageIndex] && (
                 <Image
-                  src={product.images[selectedImageIndex].transformedUrl || product.images[selectedImageIndex].url}
+                  src={displayImages[selectedImageIndex].transformedUrl || displayImages[selectedImageIndex].url}
                   alt={product.name}
                   fill
                   className="object-cover"
                 />
               )}
             </div>
-            {product.images.length > 1 && (
+            {displayImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
-                {product.images.map((image, index) => (
+                {displayImages.map((image, index) => (
                   <button
                     key={image.id}
                     onClick={() => setSelectedImageIndex(index)}
@@ -184,31 +215,89 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
               USD {selectedVariant && formatPrice(selectedVariant.unitPrice.value, selectedVariant.unitPrice.currency)}
             </div>
 
+            {/* Color Selection */}
+            {(() => {
+              const colors = Array.from(new Set(
+                product.variants
+                  .filter(v => v.attributes.color)
+                  .map(v => JSON.stringify(v.attributes.color))
+              )).map(str => JSON.parse(str));
+              
+              if (colors.length > 0) {
+                return (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium mb-3">Color</label>
+                    <select
+                      value={selectedColor || ''}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      className="w-full bg-white text-black px-4 py-3 rounded-md font-medium cursor-pointer"
+                    >
+                      {colors.map((color) => {
+                        const hasAvailableVariant = product.variants.some(v => 
+                          v.attributes.color?.name === color.name &&
+                          (v.stock.type === 'UNLIMITED' || 
+                           (v.stock.type === 'LIMITED' && v.stock.inStock && v.stock.inStock > 0))
+                        );
+                        
+                        return (
+                          <option key={color.name} value={color.name}>
+                            {color.name}
+                            {!hasAvailableVariant && ' (Out of stock)'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
             {/* Size Selection */}
-            {product.variants.length > 1 && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-3">Size</label>
-                <select
-                  value={selectedVariant?.id || ''}
-                  onChange={(e) => {
-                    const variant = product.variants.find(v => v.id === e.target.value);
-                    if (variant) setSelectedVariant(variant);
-                  }}
-                  className="w-full bg-white text-black px-4 py-3 rounded-md font-medium cursor-pointer"
-                >
-                  {product.variants.map((variant, index) => {
-                    const isAvailable = variant.stock.type === 'UNLIMITED' ||
-                      (variant.stock.type === 'LIMITED' && variant.stock.inStock && variant.stock.inStock > 0);
-                    return (
-                      <option key={variant.id} value={variant.id}>
-                        Unisex {['Small', 'Medium', 'Large', 'X-Large', '2X-Large'][index] || `Option ${index + 1}`}
-                        {!isAvailable && ' (Out of stock)'}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            )}
+            {(() => {
+              const sizes = Array.from(new Set(
+                product.variants
+                  .filter(v => v.attributes.size)
+                  .map(v => v.attributes.size!.name)
+              ));
+              
+              if (sizes.length > 0) {
+                return (
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium mb-3">Size</label>
+                    <select
+                      value={selectedSize || ''}
+                      onChange={(e) => setSelectedSize(e.target.value)}
+                      className="w-full bg-white text-black px-4 py-3 rounded-md font-medium cursor-pointer"
+                    >
+                      {sizes.map((size) => {
+                        // Check if this size is available for the selected color
+                        const isAvailableForColor = selectedColor 
+                          ? product.variants.some(v => 
+                              v.attributes.size?.name === size &&
+                              v.attributes.color?.name === selectedColor &&
+                              (v.stock.type === 'UNLIMITED' || 
+                               (v.stock.type === 'LIMITED' && v.stock.inStock && v.stock.inStock > 0))
+                            )
+                          : product.variants.some(v => 
+                              v.attributes.size?.name === size &&
+                              (v.stock.type === 'UNLIMITED' || 
+                               (v.stock.type === 'LIMITED' && v.stock.inStock && v.stock.inStock > 0))
+                            );
+                        
+                        return (
+                          <option key={size} value={size}>
+                            {size}
+                            {!isAvailableForColor && ' (Out of stock)'}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* Quantity */}
             <div className="mb-8">

@@ -9,6 +9,26 @@ export interface Product {
       value: number;
       currency: string;
     };
+
+    attributes: {
+      description: string;
+      color?: {
+        name: string;
+        swatch: string;
+      };
+      size?: {
+        name: string;
+      };
+    };
+
+    images: Array<{
+      id: string;
+      transformedUrl: string;
+      url: string;
+      width: number;
+      height: number;
+    }>;
+
     stock: {
       type: 'UNLIMITED' | 'LIMITED';
       inStock?: number;
