@@ -12,11 +12,10 @@ import ErrorState from './store/ErrorState';
 import CartDrawer from './store/CartDrawer';
 
 interface MerchStoreProps {
-  publicToken: string;
   domain: string;
 }
 
-function MerchStoreContent({ domain }: { domain: string }) {
+export default function MerchStore({ domain }: MerchStoreProps) {
   const {
     paginatedProducts,
     loading,
@@ -70,13 +69,5 @@ function MerchStoreContent({ domain }: { domain: string }) {
       <Footer />
       <CartDrawer domain={domain} />
     </div>
-  );
-}
-
-export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
-  return (
-    <ProductsProvider publicToken={publicToken}>
-      <MerchStoreContent domain={domain} />
-    </ProductsProvider>
   );
 }
