@@ -1,10 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { SortOption, Collection } from '@/types/store';
-import { useProducts } from '@/hooks/useProducts';
-import { sortProducts } from '@/lib/product-sorting';
-import { CartProvider } from '@/contexts/CartContext';
+import { ProductsProvider, useProductsContext } from '@/contexts/ProductsContext';
 import Header from './store/Header';
 import ArtistSection from './store/ArtistSection';
 import ProductFilters from './store/ProductFilters';
@@ -20,37 +16,22 @@ interface MerchStoreProps {
   domain: string;
 }
 
-const ITEMS_PER_PAGE = 12;
-
-export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
-  const { products, loading, error } = useProducts(publicToken);
-  const [collections] = useState<Collection[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
-  const [hideSoldOut, setHideSoldOut] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = products;
-    
-    if (hideSoldOut) {
-      filtered = filtered.filter(product => {
-        return product.variants.some(variant => {
-          if (variant.stock.type === 'UNLIMITED') return true;
-          if (variant.stock.type === 'LIMITED' && variant.stock.inStock && variant.stock.inStock > 0) return true;
-          return false;
-        });
-      });
-    }
-    
-    return sortProducts(filtered, sortBy);
-  }, [products, sortBy, hideSoldOut]);
-
-  // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+function MerchStoreContent({ domain }: { domain: string }) {
+  const {
+    paginatedProducts,
+    loading,
+    error,
+    sortBy,
+    setSortBy,
+    hideSoldOut,
+    setHideSoldOut,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = useProductsContext();
 
   if (loading) {
     return <LoadingState />;
@@ -74,14 +55,14 @@ export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
           onHideSoldOutChange={setHideSoldOut}
         />
 
-        <ProductGrid products={paginatedProducts} domain={domain} publicToken={publicToken} />
+        <ProductGrid products={paginatedProducts} />
 
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           startIndex={startIndex}
           endIndex={endIndex}
-          totalItems={filteredProducts.length}
+          totalItems={totalItems}
           onPageChange={setCurrentPage}
         />
       </main>
@@ -92,3 +73,10 @@ export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
   );
 }
 
+export default function MerchStore({ publicToken, domain }: MerchStoreProps) {
+  return (
+    <ProductsProvider publicToken={publicToken}>
+      <MerchStoreContent domain={domain} />
+    </ProductsProvider>
+  );
+}

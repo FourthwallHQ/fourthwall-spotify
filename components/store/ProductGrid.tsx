@@ -1,16 +1,11 @@
 import { Product } from '@/types/store';
 import ProductCard from './ProductCard';
-import { useCart } from '@/contexts/CartContext';
 
 interface ProductGridProps {
   products: Product[];
-  domain: string;
-  publicToken: string;
 }
 
 export default function ProductGrid({ products }: ProductGridProps) {
-  const { domain, publicToken } = useCart();
-
   if (products.length === 0) {
     return (
       <p className="text-center text-gray-400 py-20">No products available</p>
