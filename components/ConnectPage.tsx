@@ -1,15 +1,10 @@
 'use client';
 
-export default function ConnectPage() {
-  const handleConnect = () => {
-    // Replace YOUR_APP_ID with your actual app ID
-    const clientId = process.env.NEXT_PUBLIC_FOURTHWALL_APP_ID || 'YOUR_APP_ID';
-    const redirectUri = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    const authUrl = `https://my-shop.fourthwall.com/admin/platform-apps/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}/oauth`;
-    
-    window.location.href = authUrl;
-  };
+interface ConnectPageProps {
+  handleConnect: () => void;
+}
 
+export default function ConnectPage({ handleConnect }: ConnectPageProps) {
   return (
     <div className="min-h-screen bg-[#121212] text-white flex items-center justify-center p-8">
       <div className="text-center max-w-md">

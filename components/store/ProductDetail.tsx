@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/types/store';
 import { formatPrice } from '@/lib/store-utils';
 import { useCart } from '@/contexts/CartContext';
+import { useProductDetail } from '@/contexts/ProductDetailContext';
 import Header from './Header';
 import Footer from './Footer';
 import CartDrawer from './CartDrawer';
@@ -14,104 +14,27 @@ interface ProductDetailProps {
   slug: string;
 }
 
-export default function ProductDetail({ slug, }: ProductDetailProps) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedVariant, setSelectedVariant] = useState<Product['variants'][0] | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const { addItem, name, publicToken, domain } = useCart();
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch all products
-        const productsRes = await fetch(
-          `https://storefront-api.fourthwall.com/v1/collections/all/products?storefront_token=${publicToken}`
-        );
-        
-        if (!productsRes.ok) {
-          throw new Error('Failed to fetch products');
-        }
-        
-        const productsData = await productsRes.json();
-        const products = productsData.results || [];
-        setAllProducts(products);
-        
-        // Find the specific product by slug
-        const foundProduct = products.find((p: Product) => p.slug === slug);
-        if (foundProduct) {
-          setProduct(foundProduct);
-          setSelectedVariant(foundProduct.variants[0]);
-          // Initialize color and size from first variant
-          if (foundProduct.variants[0]) {
-            setSelectedColor(foundProduct.variants[0].attributes.color?.name || null);
-            setSelectedSize(foundProduct.variants[0].attributes.size?.name || null);
-          }
-        }
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching product:', err);
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [publicToken, slug]);
-
-  // Update selected variant when color or size changes
-  useEffect(() => {
-    if (!product || !selectedColor || !selectedSize) return;
-    
-    const matchingVariant = product.variants.find(v => 
-      v.attributes.color?.name === selectedColor && 
-      v.attributes.size?.name === selectedSize
-    );
-    
-    if (matchingVariant) {
-      setSelectedVariant(matchingVariant);
-    }
-  }, [selectedColor, selectedSize, product]);
-
-  // Reset image index when variant changes
-  useEffect(() => {
-    setSelectedImageIndex(0);
-  }, [selectedVariant]);
-
-  // Get images to display: variant images if available, otherwise product images
-  const displayImages = selectedVariant?.images && selectedVariant.images.length > 0 
-    ? selectedVariant.images 
-    : product?.images || [];
-
-  const handleBuyNow = () => {
-    const productUrl = `https://${domain}/products/${slug}`;
-    window.open(productUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  // Check if selected variant has available stock
-  const isVariantAvailable = selectedVariant ? (
-    selectedVariant.stock.type === 'UNLIMITED' ||
-    (selectedVariant.stock.type === 'LIMITED' && selectedVariant.stock.inStock && selectedVariant.stock.inStock > 0)
-  ) : false;
-
-  const handleAddToCart = async () => {
-    if (!selectedVariant || !isVariantAvailable) return;
-    
-    setIsAddingToCart(true);
-    try {
-      await addItem(selectedVariant.id, quantity);
-    } catch (error) {
-      console.error('Failed to add to cart:', error);
-      // Optionally show an error message to the user
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
+export default function ProductDetail({ slug }: ProductDetailProps) {
+  const { name, publicToken, domain } = useCart();
+  const {
+    product,
+    relatedProducts,
+    loading,
+    selectedVariant,
+    selectedColor,
+    selectedSize,
+    quantity,
+    selectedImageIndex,
+    isAddingToCart,
+    displayImages,
+    isVariantAvailable,
+    setSelectedColor,
+    setSelectedSize,
+    setQuantity,
+    setSelectedImageIndex,
+    handleAddToCart,
+    handleBuyNow,
+  } = useProductDetail();
 
   if (loading) {
     return (
@@ -137,11 +60,6 @@ export default function ProductDetail({ slug, }: ProductDetailProps) {
       </div>
     );
   }
-
-  // Get related products (exclude current one, limit to 5)
-  const relatedProducts = allProducts
-    .filter(p => p.id !== product.id)
-    .slice(0, 5);
 
   return (
     <div className="min-h-screen bg-[#121212] text-white">

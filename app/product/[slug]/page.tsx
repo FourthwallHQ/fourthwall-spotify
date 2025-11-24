@@ -5,6 +5,7 @@ import { Suspense, use } from 'react';
 import ProductDetail from '@/components/store/ProductDetail';
 import LoadingState from '@/components/store/LoadingState';
 import { CartProvider } from '@/contexts/CartContext';
+import { ProductDetailProvider } from '@/contexts/ProductDetailContext';
 
 function ProductPageContent({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
@@ -20,9 +21,13 @@ function ProductPageContent({ slug }: { slug: string }) {
     );
   }
 
-  return <CartProvider publicToken={publicToken} domain={domain} name={name} >
-    <ProductDetail slug={slug} />
-  </CartProvider>;
+  return (
+    <CartProvider publicToken={publicToken} domain={domain} name={name}>
+      <ProductDetailProvider slug={slug}>
+        <ProductDetail slug={slug} />
+      </ProductDetailProvider>
+    </CartProvider>
+  );
 }
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
